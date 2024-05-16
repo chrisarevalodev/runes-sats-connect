@@ -1,35 +1,64 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Wallet, { AddressPurpose, BitcoinNetworkType } from 'sats-connect'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [runeAddress, setRuneAddress] = useState<string>('')
+  const [paymentAddress, setPaymentAddress] = useState<string>('')
+  const [fundTxId, setFundTxId] = useState<string>('')
+
+  console.log(runeAddress, paymentAddress)
+
+  const handleConnect = async () => {
+    const provider = await Wallet.request('getAccounts', {
+      purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
+    })
+
+    if (provider.status === 'error') {
+      console.error(provider.error)
+    }
+
+    if (provider.status === 'success') {
+      setRuneAddress(provider.result[0].address)
+      setPaymentAddress(provider.result[1].address)
+    }
+  }
+
+  console.log(fundTxId)
+
+  const handleEtch = async () => {
+    const response = await Wallet.request('runes_etch', {
+      runeName: 'ROOTSTOCK•TEST',
+      premine: '10',
+      divisibility: 1,
+      isMintable: true,
+      feeRate: 47,
+      destinationAddress: runeAddress,
+      refundAddress: paymentAddress,
+      network: BitcoinNetworkType.Testnet,
+    })
+
+    if (response.status === 'success') {
+      setFundTxId(response.result.fundTransactionId)
+    } else {
+      console.error(response.error)
+      alert('Error etching UNCOMMONGOODS. See console for details.')
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <main className="min-h-svh bg-black flex justify-center items-center">
+      <div className="flex gap-5">
+        <button
+          onClick={handleConnect}
+          className="bg-orange-600 text-black p-4"
+        >
+          Connect
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+
+        <button onClick={handleEtch} className="bg-orange-600 text-black p-4">
+          Etch Rune
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </main>
   )
 }
-
-export default App
