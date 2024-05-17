@@ -25,6 +25,25 @@ export default function App() {
 
   console.log(fundTxId)
 
+  const handleMint = async () => {
+    const response = await Wallet.request('runes_mint', {
+      destinationAddress: 'an ordinal address',
+      feeRate: 47,
+      repeats: 1,
+      runeName: 'TEST•RSK•TEST•RSK•TEST',
+      refundAddress: 'a payment address',
+      network: BitcoinNetworkType.Testnet
+    })
+
+    if (response.status === 'success') {
+      console.log(response)
+      alert('Succesfully minted TESTRSKTESTRSKTESS. See console for details.');
+    } else {
+      console.error(response.error);
+      alert('Error minting TESTRSKTESTRSKTESS. See console for details.');
+    }
+  }
+
   const handleEtch = async () => {
     const response = await Wallet.request('runes_etch', {
       runeName: 'ROOTSTOCK•TEST',
@@ -57,6 +76,10 @@ export default function App() {
 
         <button onClick={handleEtch} className="bg-orange-600 text-black p-4">
           Etch Rune
+        </button>
+
+        <button onClick={handleMint} className="bg-orange-600 text-black p-4">
+          Mint Rune
         </button>
       </div>
     </main>
